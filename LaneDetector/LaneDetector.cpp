@@ -9,10 +9,11 @@
 
 #define PI 3.14159265
 
-LaneDetector::LaneDetector():angleFilter(0.5,32,100,0)
+LaneDetector::LaneDetector():angleFilter(0.5,50,100,0)
 {
   ransac.Initialize(50, 10);
   steeringAngle = 0;
+  steeringAngleFiltered = 0;
 }
 
 void LaneDetector::convertToGrayscale(cv::Mat& image)
@@ -338,8 +339,12 @@ void LaneDetector::calculateSteeringAngle(cv::Mat& image, bool centerCompensatio
       tgBeta = KT/KC;
     }
     steeringAngle = (atan(tgAlpha) * 180 / PI) + (atan(tgBeta) * 180 / PI);
+    steeringAngleFiltered = angleFilter.getFilteredValue(steeringAngle);
+
+    return;
   }
   steeringAngle = atan(tgAlpha) * 180 / PI;
+  steeringAngleFiltered = angleFilter.getFilteredValue(steeringAngle);
 }
 
 float LaneDetector::getSteeringAngle()
@@ -349,7 +354,7 @@ float LaneDetector::getSteeringAngle()
 
 float LaneDetector::getFilteredSteeringAngle()
 {
-  return angleFilter.getFilteredValue(getSteeringAngle());
+  return steeringAngleFiltered;
 }
 
 cv::Mat LaneDetector::runCurvePipeline(cv::Mat input)
@@ -358,7 +363,6 @@ cv::Mat LaneDetector::runCurvePipeline(cv::Mat input)
   cv::Mat image;
   input.copyTo(image);
   cv::resize(image, image, cv::Size(), resizeRatio, resizeRatio);
- 
   const int width = image.cols;
   const int height = image.rows;
   quadA[0] = cv::Point2f(width/2 - width / 16, height/1.6);

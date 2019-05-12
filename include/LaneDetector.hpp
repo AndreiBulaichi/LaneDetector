@@ -9,26 +9,29 @@
 
 class LaneDetector {
  private:
+
   cv::Point2f quadA[4], quadB[4];
-  GRANSAC::RANSAC<Line2DModel, 2> ransac;
-  Kalman angleFilter;
-  float steeringAngle;
   std::vector<float> xMiddle, yMiddle;
+  GRANSAC::RANSAC<Line2DModel, 2> ransac;
+  float steeringAngle;
+  float steeringAngleFiltered;
+  Kalman angleFilter;
+
  public:
+
   LaneDetector();
 
-  void convertToGrayscale(cv::Mat& input);
-  void transformPerspective(cv::Mat& input);
-  void inversePerspective(cv::Mat& input);
+  void convertToGrayscale(cv::Mat&);
+  void transformPerspective(cv::Mat&);
+  void inversePerspective(cv::Mat&);
 
-  std::vector<uint16_t> calcHistogramOverX(cv::Mat& image);
-  cv::Mat plotHistogram(cv::Mat& image, std::vector<uint16_t> histogram);
-  std::vector<std::vector<float>> calculateLanePoints(cv::Mat& input);
-  cv::Mat plotLanePoints(std::vector<std::vector<float>> points, cv::Mat image);
-  std::vector<std::vector<float>> fitLanePoints(
-    std::vector<std::vector<float>> points, cv::Mat grayImage);
-  cv::Mat runCurvePipeline(cv::Mat image);
-  void calculateSteeringAngle(cv::Mat& image, bool centerCompensation,  bool plot);
+  std::vector<uint16_t> calcHistogramOverX(cv::Mat&);
+  cv::Mat plotHistogram(cv::Mat&, std::vector<uint16_t>);
+  std::vector<std::vector<float>> calculateLanePoints(cv::Mat&);
+  cv::Mat plotLanePoints(std::vector<std::vector<float>>, cv::Mat);
+  std::vector<std::vector<float>> fitLanePoints(std::vector<std::vector<float>>, cv::Mat);
+  cv::Mat runCurvePipeline(cv::Mat);
+  void calculateSteeringAngle(cv::Mat&, bool, bool);
   float getSteeringAngle();
   float getFilteredSteeringAngle();
 };
