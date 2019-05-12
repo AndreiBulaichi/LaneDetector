@@ -9,7 +9,7 @@
 
 #define PI 3.14159265
 
-LaneDetector::LaneDetector()
+LaneDetector::LaneDetector():angleFilter(0.5,32,100,0)
 {
   ransac.Initialize(50, 10);
   steeringAngle = 0;
@@ -345,6 +345,11 @@ void LaneDetector::calculateSteeringAngle(cv::Mat& image, bool centerCompensatio
 float LaneDetector::getSteeringAngle()
 {
   return steeringAngle;
+}
+
+float LaneDetector::getFilteredSteeringAngle()
+{
+  return angleFilter.getFilteredValue(getSteeringAngle());
 }
 
 cv::Mat LaneDetector::runCurvePipeline(cv::Mat input)

@@ -5,12 +5,13 @@
 #include <opencv2/opencv.hpp>
 #include "ransac/GRANSAC.hpp"
 #include "ransac/LineModel.hpp"
+#include "kalman/kalman.h"
 
 class LaneDetector {
  private:
   cv::Point2f quadA[4], quadB[4];
   GRANSAC::RANSAC<Line2DModel, 2> ransac;
-
+  Kalman angleFilter;
   float steeringAngle;
   std::vector<float> xMiddle, yMiddle;
  public:
@@ -29,4 +30,5 @@ class LaneDetector {
   cv::Mat runCurvePipeline(cv::Mat image);
   void calculateSteeringAngle(cv::Mat& image, bool centerCompensation,  bool plot);
   float getSteeringAngle();
+  float getFilteredSteeringAngle();
 };
