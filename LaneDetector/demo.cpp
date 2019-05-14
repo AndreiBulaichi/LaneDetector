@@ -13,6 +13,11 @@
 cv::Mat3b PlotGraph(std::vector<double> data);
 
 int main(int argc, char *argv[]) {
+
+    // std::cout << cv::getBuildInformation() << std::endl;
+
+    cv::waitKey();
+
     if (argc != 2) {
       std::cout << "Not enough parameters" << std::endl;
       return -1;
@@ -31,9 +36,9 @@ int main(int argc, char *argv[]) {
     cv::Mat frame;
     cap >> frame;
     while (!frame.empty()) {
-      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+      auto begin = std::chrono::steady_clock::now();
 
-      cv::Mat image = laneDetector.runCurvePipeline(frame);
+      cv::Mat image = *(laneDetector.runCurvePipeline(frame));
 
       std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
       float duration = std::chrono::duration_cast< std::chrono::microseconds>(end - begin).count();

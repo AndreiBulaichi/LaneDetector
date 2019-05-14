@@ -24,13 +24,14 @@ class LaneDetector {
   void convertToGrayscale(cv::Mat&);
   void transformPerspective(cv::Mat&);
   void inversePerspective(cv::Mat&);
+  std::vector<uint16_t>* calcHistogram(cv::Mat&);
+  cv::Mat plotHistogram(cv::Mat&, std::vector<uint16_t>*);
+  std::vector<std::vector<uint16_t>> calculateLanePoints(cv::Mat&);
+  std::vector<std::vector<float>>* fitLanePoints(std::vector<std::vector<uint16_t>>, cv::Mat&);
+  void plotLanePoints(std::vector<std::vector<float>>*, cv::Mat&);
 
-  std::vector<uint16_t> calcHistogramOverX(cv::Mat&);
-  cv::Mat plotHistogram(cv::Mat&, std::vector<uint16_t>);
-  std::vector<std::vector<float>> calculateLanePoints(cv::Mat&);
-  cv::Mat plotLanePoints(std::vector<std::vector<float>>, cv::Mat);
-  std::vector<std::vector<float>> fitLanePoints(std::vector<std::vector<float>>, cv::Mat);
-  cv::Mat runCurvePipeline(cv::Mat);
+  cv::Mat* runCurvePipeline(cv::Mat&);
+  void runLightCurvePipeline(cv::Mat);
   void calculateSteeringAngle(cv::Mat&, bool, bool);
   float getSteeringAngle();
   float getFilteredSteeringAngle();
