@@ -1,11 +1,11 @@
 #pragma once
 
 #ifdef BOOST_UBLAS_TYPE_CHECK
-#	undef BOOST_UBLAS_TYPE_CHECK
+#undef BOOST_UBLAS_TYPE_CHECK
 #endif
 #define BOOST_UBLAS_TYPE_CHECK 0
 #ifndef _USE_MATH_DEFINES
-#	define _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
 #endif
 
 #include <boost/numeric/ublas/matrix.hpp>
@@ -45,7 +45,7 @@ std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, int 
 	matrix<T> oYMatrix( nCount, 1 );
 	
 	// copy y matrix
-	for ( size_t i = 0; i < nCount; i++ )
+	for ( size_t i = 0; i < nCount; ++i )
 	{
 		oYMatrix(i, 0) = oY[i];
 	}
@@ -101,12 +101,12 @@ std::vector<T> polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
 	size_t nDegree = oCoeff.size();
 	std::vector<T>	oY( nCount );
 
-	for ( size_t i = 0; i < nCount; i++ )
+	for ( size_t i = 0; i < nCount; ++i )
 	{
 		T nY = 0;
 		T nXT = 1;
 		T nX = oX[i];
-		for ( size_t j = 0; j < nDegree; j++ )
+		for ( size_t j = 0; j < nDegree; ++j )
 		{
 			// multiply current x by a coefficient
 			nY += oCoeff[j] * nXT;

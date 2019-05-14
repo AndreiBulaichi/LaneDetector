@@ -150,6 +150,7 @@ std::vector<std::vector<float>>* LaneDetector::fitLanePoints(
    leftInterpY.clear();
    rightInterpX.clear();
    rightInterpY.clear();
+   // TODO : track 2nd grade coeffs with kalman
    // 2nd degree polynomial interpolation
    for(uint16_t i = 0; i < lx.size(); ++i)
       leftPointsMap[lx[i]] = ly[i];
@@ -350,26 +351,25 @@ cv::Mat* LaneDetector::runCurvePipeline(cv::Mat& input)
    return &image;
 }
 
-// void LaneDetector::runLightCurvePipeline(cv::Mat input)
-// {
-//   const float resizeRatio = 1;
-//   cv::Mat image;
-//   input.copyTo(image);
-//   cv::resize(image, image, cv::Size(), resizeRatio, resizeRatio);
-//   const int width = image.cols;
-//   const int height = image.rows;
-//   quadA[0] = cv::Point2f(width/2 - width / 16, height/1.6);
-//   quadA[1] = cv::Point2f(width/2 + width / 16, height/1.6);
-//   quadA[2] = cv::Point2f(width, height);
-//   quadA[3] = cv::Point2f(0, height);
-//   quadB[0] = cv::Point2f(0, 0);
-//   quadB[1] = cv::Point2f(width-1, 0);
-//   quadB[2] = cv::Point2f(width-1, height-1);
-//   quadB[3] = cv::Point2f(0, height-1);
-//   transformPerspective(image);
-//   convertToGrayscale(image);
-//   auto points = calculateLanePoints(image);
-//   points = fitLanePoints(points,image);
-//   image = cv::Mat::zeros(height, width, CV_8UC1);
-//   calculateSteeringAngle(image, true, true);
-// }
+void LaneDetector::runLightCurvePipeline(cv::Mat& input)
+{
+   static cv::Mat image;
+   const float resizeRatio = 1;
+   cv::resize(input, image, cv::Size(), resizeRatio, resizeRatio);
+   const int width = image.cols, height = image.rows;
+
+   quadA[0] = cv::Point2f(width/2 - width / 16, height/1.6);
+   quadA[1] = cv::Point2f(width/2 + width / 16, height/1.6);
+   quadA[2] = cv::Point2f(width, height);
+   quadA[3] = cv::Point2f(0, height);
+   quadB[0] = cv::Point2f(0, 0);
+   quadB[1] = cv::Point2f(width-1, 0);
+   quadB[2] = cv::Point2f(width-1, height-1);
+   quadB[3] = cv::Point2f(0, height-1);
+
+   transformPerspective(image);
+   convertToGrayscale(image);
+   auto points = calculateLanePoints(image);
+   fitLanePoints(points,image);
+   calculateSteeringAngle(image, true, true);
+}

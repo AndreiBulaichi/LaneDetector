@@ -31,7 +31,7 @@ class LaneDetector {
   void plotLanePoints(std::vector<std::vector<float>>*, cv::Mat&);
 
   cv::Mat* runCurvePipeline(cv::Mat&);
-  void runLightCurvePipeline(cv::Mat);
+  void runLightCurvePipeline(cv::Mat&);
   void calculateSteeringAngle(cv::Mat&, bool, bool);
   float getSteeringAngle();
   float getFilteredSteeringAngle();
