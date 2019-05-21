@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     std::valarray<float> angleArray(300);
     std::valarray<float> kalmanArray(300);
 
-    LaneDetector laneDetector;
+    LaneDetector laneDetector(1, 1280, 720);
     cv::Mat frame;
     cap >> frame;
     while (!frame.empty()) {
