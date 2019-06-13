@@ -24,7 +24,8 @@ LaneDetector::LaneDetector(float resizeRatio , uint16_t width, uint16_t height):
     angleFilter(0.5,50,100,0),
     steeringAngle(0),
     steeringAngleFiltered(0),
-    lineFilters(6, Kalman(0.8,32,50,0))
+    lineFilters(6, Kalman(0.8,32,50,0)),
+    xMiddle(height, this->width / 2)
 {
    ransac.Initialize(lineThreshold, maxIterations);
 
@@ -45,7 +46,7 @@ void LaneDetector::convertToGrayscale(cv::Mat& image)
   cvtColor(image, image,  cv::COLOR_RGB2HLS);
   split(image, channels);
   GaussianBlur(channels[1], channels[0], cv::Size(3, 3), 0, 0);
-  threshold(channels[0], channels[0], 180, 255, cv::THRESH_BINARY);
+  threshold(channels[0], channels[0], 180, 255, cv::THRESH_BINARY );
   threshold(channels[1], channels[1], 110, 255, cv::THRESH_BINARY);
   threshold(channels[2], channels[2], 80 , 255, cv::THRESH_BINARY);
   bitwise_and(channels[1], channels[2], image);
@@ -87,10 +88,7 @@ cv::Mat LaneDetector::plotHistogram(std::vector<uint16_t>* histogram)
 
 std::vector<std::vector<uint16_t>> LaneDetector::calcLanePoints(cv::Mat& image)
 {
-  // TODO : need to handle RANSAC failure, to few points
-  const uint16_t middle = (image.cols)/2;
   const uint16_t sliceSize = (image.rows)/slices;
-  uint16_t maxLeftPos,maxRightPos;
   vector<uint16_t>* histogram;
   vector<uint16_t> leftVectorX, leftVectorY, rightVectorX, rightVectorY;
   vector<shared_ptr<GRANSAC::AbstractParameter>> leftPoints;
@@ -102,15 +100,63 @@ std::vector<std::vector<uint16_t>> LaneDetector::calcLanePoints(cv::Mat& image)
   {
     crop = cv::Mat(image, cv::Rect(0, sliceNum * sliceSize, image.cols, sliceSize));
     histogram = calcHistogram(crop);
-    maxLeftPos = distance(histogram->begin(), max_element(histogram->begin(), histogram->begin() + middle));
-    maxRightPos = distance(histogram->begin() + middle, max_element(histogram->begin() + middle, histogram->end()));
 
     const uint16_t y = (sliceNum * sliceSize) + 0.5 * sliceSize;
+    const uint16_t middle = xMiddle[y];
 
-    if ((maxLeftPos != middle - 1) && (maxLeftPos != 0))
-      leftPoints.push_back(std::make_shared<Point2D>(maxLeftPos, y));
-    if ((maxRightPos != middle - 1) && (maxRightPos != 0))
-      rightPoints.push_back(std::make_shared<Point2D>(maxRightPos + middle, y));
+    const uint16_t minBandHeight = 15;
+    const uint16_t minBandWidth = 15;
+
+    vector<uint16_t> histogramCpy(histogram->begin(), histogram->end());
+
+    for(uint16_t k = 3; k < histogramCpy.size() - 2; ++k){
+      histogramCpy[k] = (histogramCpy[k-2] + histogramCpy[k-1] + histogramCpy[k] + histogramCpy[k + 1] + histogramCpy[k + 2])/5;
+    }
+    histogram = &histogramCpy;
+
+    uint16_t leftBandPos = 0, rightBandPos = 0;
+
+    for(uint16_t j = 1; j < middle - 1 ; ++j)
+    {
+      if((*histogram)[j] < minBandHeight)
+        continue;
+
+      if((*histogram)[j - 1] < minBandHeight)
+      {
+        leftBandPos = j;
+      }
+
+      if((*histogram)[j + 1] < minBandHeight)
+      {
+        rightBandPos = j;
+        break;
+      }
+    }
+
+    if((rightBandPos - leftBandPos) > minBandWidth)
+      leftPoints.push_back(std::make_shared<Point2D>((rightBandPos + leftBandPos) / 2, y));
+
+    leftBandPos = 0; rightBandPos = 0;
+
+    for(uint16_t j = middle; j < histogram->size() - 1 ; ++j)
+    {
+      if((*histogram)[j] < minBandHeight)
+        continue;
+
+      if((*histogram)[j - 1] < minBandHeight)
+      {
+        leftBandPos = j;
+      }
+
+      if((*histogram)[j + 1] < minBandHeight)
+      {
+        rightBandPos = j;
+        break;
+      }
+    }
+
+    if((rightBandPos - leftBandPos) > minBandWidth)
+      rightPoints.push_back(std::make_shared<Point2D>((rightBandPos + leftBandPos) / 2, y));
   }
 
   if(ransac.Estimate(leftPoints)){
@@ -122,7 +168,6 @@ std::vector<std::vector<uint16_t>> LaneDetector::calcLanePoints(cv::Mat& image)
       leftVectorY.push_back(static_cast<uint16_t>(point->m_Point2D[1]));
     }
   }
-
 
   if(ransac.Estimate(rightPoints)){
     auto rightInliers = ransac.GetBestInliers();
@@ -366,6 +411,7 @@ cv::Mat* LaneDetector::runCurvePipeline(cv::Mat& input)
    resize(input, image, cv::Size(), resizeRatio, resizeRatio);
    transformPerspective(image);
    convertToGrayscale(image);
+   cv::imshow("gray", image);
    auto fittedPoints = fitLanePoints(calcLanePoints(image),image);
    image = cv::Mat::zeros(height, width, CV_8UC3);
    plotLanePoints(fittedPoints, image);

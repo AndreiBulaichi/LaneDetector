@@ -32,9 +32,10 @@ int main(int argc, char *argv[]) {
     std::valarray<float> angleArray(300);
     std::valarray<float> kalmanArray(300);
 
-    LaneDetector laneDetector(1, 1280, 720);
     cv::Mat frame;
     cap >> frame;
+    LaneDetector laneDetector(1, frame.cols, frame.rows);
+
     while (!frame.empty()) {
       auto begin = std::chrono::steady_clock::now();
 

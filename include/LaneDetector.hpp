@@ -19,11 +19,11 @@ class LaneDetector {
   Kalman angleFilter;
   float steeringAngle;
   float steeringAngleFiltered;
-  vector<float> xMiddle, yMiddle;
   cv::Point2f quadA[4], quadB[4];
   GRANSAC::RANSAC<Line2DModel, 2> ransac;
 
   vector<Kalman> lineFilters;
+  vector<uint16_t> xMiddle, yMiddle;
 
   public:
 
@@ -45,3 +45,27 @@ class LaneDetector {
   float getSteeringAngle();
   float getFilteredSteeringAngle();
 };
+
+template <class ForwardIterator>
+  ForwardIterator max_element_forward( ForwardIterator first, ForwardIterator last )
+{
+  if (first==last) return last;
+  ForwardIterator largest = first;
+
+  while (++first!=last)
+    if (*largest<*first)
+      largest=first;
+  return largest;
+}
+
+template <class BackwardIterator>
+BackwardIterator max_element_backward( BackwardIterator first, BackwardIterator last )
+{
+  if (first==last) return last;
+  BackwardIterator largest = first;
+
+  while (--first!=last)
+    if (*largest<*first)
+      largest=first;
+  return largest;
+}
